@@ -2,12 +2,11 @@ import socket
 
 def client1():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(("127.0.0.1", 5555))
+    client.connect(("127.0.0.1", 1234))
 
     while True:
         data = client.recv(1024).decode()
         print(data)
-
         if "Start guessing" in data or "higher" in data or "lower" in data:
             guess = input("Enter your guess (or type 'quit' to exit): ")
             client.sendall(guess.encode())

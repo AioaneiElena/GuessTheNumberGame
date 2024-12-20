@@ -10,7 +10,7 @@ scores = []
 
 def handle_client_vs_client(conn, addr, client_id):
     global number_to_guess, max_score, clients, scores
-    print(f"[INFO] Client {client_id} connected: {addr}")
+    print(f"Client {client_id} connected: {addr}")
     conn.sendall(f"Welcome, Client {client_id}!\n".encode())
 
     while True:
@@ -75,11 +75,12 @@ def handle_client_vs_client(conn, addr, client_id):
                 clients[1][0].sendall("Please choose a new number for the next round (between 0 and 50):\n".encode())
 
 def handle_client_vs_server(conn, addr):
-    print(f"[INFO] Client connected: {addr}")
+    print(f"Client connected: {addr}")
     conn.sendall("Welcome to the Guess the Number game!\n".encode())
 
     while True:
         number_to_guess = random.randint(0, 50)
+        print(f"Chosen number: {number_to_guess}")
         conn.sendall("I have chosen a number between 0 and 50. Start guessing!\n".encode())
         attempts = 0
 
@@ -115,33 +116,29 @@ def close_all_connections():
         try:
             c[0].close()
         except Exception as e:
-            print(f"[ERROR] Error closing connection: {e}")
-    print("[INFO] All connections closed. Server shutting down.")
+            print(f"Error closing connection: {e}")
 
 def start_server():
     global clients
-
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(("127.0.0.1", 5555))
+    server.bind(("127.0.0.1", 1234))
     server.listen(2)
-    print("[INFO] Server is listening on port 5555...")
+    game_type = input("Choose game_type: 1 for Client vs Client, 2 for Client vs Server: ").strip()
 
-    mode = input("Choose mode: 1 for Client vs Client, 2 for Client vs Server: ").strip()
-
-    if mode == '1':
+    if game_type == '1':
         while len(clients) < 2:
             conn, addr = server.accept()
             clients.append((conn, addr))
             client_id = len(clients)
             thread = threading.Thread(target=handle_client_vs_client, args=(conn, addr, client_id))
             thread.start()
-    elif mode == '2':
+    elif game_type == '2':
         while True:
             conn, addr = server.accept()
             thread = threading.Thread(target=handle_client_vs_server, args=(conn, addr))
             thread.start()
     else:
-        print("Invalid mode. Server shutting down.")
+        print("Invalid game_type. Server shutting down.")
 
 if __name__ == "__main__":
     start_server()
